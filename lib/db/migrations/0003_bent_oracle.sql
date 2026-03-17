@@ -1,0 +1,1 @@
+ALTER TABLE "pim_product_variations" ADD COLUMN "sequence" integer DEFAULT 0 NOT NULL;

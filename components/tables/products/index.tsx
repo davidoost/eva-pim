@@ -50,7 +50,7 @@ export function SearchableProductsTable(props: ProductsTableProps) {
           </SearchField>
         </div>
 
-        <CreateProductFormModal namespace={props.namespace} />
+        <CreateProductFormModal namespace={props.namespace} properties={props.properties} />
       </div>
       <ProductsTable {...props} />
     </div>

@@ -4,3 +4,8 @@ export type SetCookiesProps = {
   rt: string;
   rtExpString: string;
 };
+
+export type ProductProperty = {
+  ID: string;
+  DisplayName?: string;
+};

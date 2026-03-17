@@ -1,5 +1,5 @@
 export type FormState<T extends Record<string, unknown>> = {
-  status: "default" | "error" | "success";
+  status: FormStateStatus;
   fieldValues?: Partial<T>;
   fieldErrors?: FieldErrors<T>;
   formErrors?: string[];
@@ -8,3 +8,5 @@ export type FormState<T extends Record<string, unknown>> = {
 export type FieldErrors<T extends Record<string, unknown>> = Partial<
   Record<keyof T, { errors: string[] }>
 >;
+
+export type FormStateStatus = "default" | "error" | "success";

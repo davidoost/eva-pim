@@ -1,7 +1,9 @@
 "use client";
 
+import DeleteProductFormModal from "@/components/forms/delete-product/modal";
 import UpdateProductFormModal from "@/components/forms/update-product/modal";
 import { SelectProduct } from "@/lib/db/types";
+import { ProductProperty } from "@/lib/core/types";
 import { EmptyState, Pagination, Table } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { useEffect, useMemo, useState } from "react";
@@ -9,6 +11,7 @@ import { useEffect, useMemo, useState } from "react";
 export interface ProductsTableProps {
   namespace: string;
   products: SelectProduct[];
+  properties: ProductProperty[];
   pageSize?: number;
 }
 
@@ -16,6 +19,7 @@ export function ProductsTable({
   products,
   pageSize = 10,
   namespace,
+  properties,
 }: ProductsTableProps) {
   const [page, setPage] = useState(1);
 
@@ -57,10 +61,17 @@ export function ProductsTable({
                 <Table.Cell>{product.name}</Table.Cell>
                 <Table.Cell>{product.createdAt.toString()}</Table.Cell>
                 <Table.Cell>
-                  <UpdateProductFormModal
-                    product={product}
-                    namespace={namespace}
-                  />
+                  <div className="flex">
+                    <UpdateProductFormModal
+                      product={product}
+                      namespace={namespace}
+                      properties={properties}
+                    />
+                    <DeleteProductFormModal
+                      namespace={namespace}
+                      productId={product.id}
+                    />
+                  </div>
                 </Table.Cell>
               </Table.Row>
             ))}

@@ -31,6 +31,7 @@ export default function ResponsiveModal({
       <Drawer.Backdrop
         isOpen={modalState.isOpen}
         onOpenChange={modalState.setOpen}
+        variant={isDestructive ? "blur" : "opaque"}
       >
         <Drawer.Content placement="bottom">
           <Drawer.Dialog
@@ -66,6 +67,7 @@ export default function ResponsiveModal({
     <Modal.Backdrop
       isOpen={modalState.isOpen}
       onOpenChange={modalState.setOpen}
+      variant={isDestructive ? "blur" : "opaque"}
     >
       <Modal.Container size="lg">
         <Modal.Dialog>

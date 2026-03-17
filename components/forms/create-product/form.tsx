@@ -12,36 +12,44 @@ import {
   useOverlayState,
   UseOverlayStateReturn,
 } from "@heroui/react";
-import { startTransition, useActionState, useEffect, useRef } from "react";
+import { startTransition, useActionState, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createProduct } from "./action";
 import CancelButton from "@/components/form-fields/cancel-button";
 import SubmitButton from "@/components/form-fields/submit-button";
 import ProductImageUploader, { ProductImageUploaderRef } from "@/components/form-fields/product-image-uploader";
+import VariationsField from "@/components/form-fields/variations-field";
+import { ProductProperty } from "@/lib/core/types";
 
 interface CreateProductForm {
   modalState: UseOverlayStateReturn;
   namespace: string;
+  properties: ProductProperty[];
 }
 
 export default function CreateProductForm({
   modalState,
   namespace,
+  properties,
 }: CreateProductForm) {
   const router = useRouter();
   const uploaderRef = useRef<ProductImageUploaderRef>(null);
 
   const formAction = createProduct.bind(null, namespace);
 
-  const [state, dispatch, isLoading] = useActionState(formAction, {
+  const [state, dispatch, isPending] = useActionState(formAction, {
     status: "default",
   });
+  const [isUploading, setIsUploading] = useState(false);
+  const isLoading = isUploading || isPending;
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setIsUploading(true);
     const formData = new FormData(e.currentTarget);
     const { imageUrls } = (await uploaderRef.current?.prepareSubmit()) ?? { imageUrls: [] };
     imageUrls.forEach((url) => formData.append("imageUrl", url));
+    setIsUploading(false);
     startTransition(() => dispatch(formData));
   }
 
@@ -100,6 +108,8 @@ export default function CreateProductForm({
       </TextField>
 
       <ProductImageUploader ref={uploaderRef} namespace={namespace} />
+
+      <VariationsField properties={properties} />
 
       <Switch name="published" defaultSelected={state.fieldValues?.published}>
         {({ isSelected }) => (

@@ -6,6 +6,19 @@ import { UpdateProductFormProps, updateProductFormSchema } from "./schema";
 import { core } from "@/lib/core";
 import { deleteProductImages } from "@/lib/supabase/actions";
 
+type VariationGroup = { property: string; values: string[] };
+
+function parseVariations(json: string): { property: string; value: string }[] {
+  try {
+    const groups: VariationGroup[] = JSON.parse(json || "[]");
+    return groups.flatMap((g) =>
+      g.values.filter(Boolean).map((value) => ({ property: g.property, value })),
+    );
+  } catch {
+    return [];
+  }
+}
+
 export async function updateProduct(
   namespace: string,
   productId: string,
@@ -41,10 +54,11 @@ export async function updateProduct(
 
   const imageUrls = (formData.getAll("imageUrl") as string[]).filter(Boolean);
   const removedPaths = (formData.getAll("removedImagePath") as string[]).filter(Boolean);
+  const variations = parseVariations(formData.get("variationsJson") as string);
 
   await deleteProductImages(removedPaths);
 
-  const success = await env.updateProduct(productId, parsed.data, imageUrls);
+  const success = await env.updateProduct(productId, parsed.data, imageUrls, variations);
 
   if (!success) {
     return {

@@ -1,7 +1,7 @@
 import DashboardPageHeader from "@/components/layout/dashboard-page-header";
 import { SearchableProductsTable } from "@/components/tables/products";
 import { core } from "@/lib/core";
-import { Table } from "@heroui/react";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 
 interface ProductsPageProps {
@@ -14,7 +14,10 @@ export default async function ProductsPage({ params }: ProductsPageProps) {
   const env = await core.getEnvironmentByNamespace(namespace);
   if (!env) notFound();
 
-  const products = await env.listProducts();
+  const [products, properties] = await Promise.all([
+    env.listProducts(),
+    env.listProductProperties(await cookies()),
+  ]);
 
   return (
     <>
@@ -23,7 +26,7 @@ export default async function ProductsPage({ params }: ProductsPageProps) {
         description="Manage your product catalog"
       />
 
-      <SearchableProductsTable products={products} namespace={namespace} />
+      <SearchableProductsTable products={products} namespace={namespace} properties={properties} />
     </>
   );
 }

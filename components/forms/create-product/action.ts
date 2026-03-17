@@ -5,6 +5,19 @@ import z from "zod";
 import { CreateProductFormProps, createProductFormSchema } from "./schema";
 import { core } from "@/lib/core";
 
+type VariationGroup = { property: string; values: string[] };
+
+function parseVariations(json: string): { property: string; value: string }[] {
+  try {
+    const groups: VariationGroup[] = JSON.parse(json || "[]");
+    return groups.flatMap((g) =>
+      g.values.filter(Boolean).map((value) => ({ property: g.property, value })),
+    );
+  } catch {
+    return [];
+  }
+}
+
 export async function createProduct(
   namespace: string,
   prevState: FormState<CreateProductFormProps>,
@@ -38,8 +51,9 @@ export async function createProduct(
     };
 
   const imageUrls = (formData.getAll("imageUrl") as string[]).filter(Boolean);
+  const variations = parseVariations(formData.get("variationsJson") as string);
 
-  const success = await env.createProduct(parsed.data, imageUrls);
+  const success = await env.createProduct(parsed.data, imageUrls, variations);
 
   if (!success) {
     return {

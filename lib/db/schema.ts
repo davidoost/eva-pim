@@ -48,6 +48,7 @@ export const productVariations = pgTable("pim_product_variations", {
     .references(() => products.id),
   variationProperty: text("variation_property").notNull(),
   variationValue: text("variation_value").notNull(),
+  sequence: integer("sequence").notNull().default(0),
 });
 
 export const productImages = pgTable("pim_product_images", {

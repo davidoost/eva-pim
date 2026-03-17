@@ -15,19 +15,26 @@ import { useRouter } from "next/navigation";
 import { updateProduct } from "./action";
 import CancelButton from "@/components/form-fields/cancel-button";
 import SubmitButton from "@/components/form-fields/submit-button";
-import ProductImageUploader, { ProductImageUploaderRef } from "@/components/form-fields/product-image-uploader";
+import ProductImageUploader, {
+  ProductImageUploaderRef,
+} from "@/components/form-fields/product-image-uploader";
+import VariationsField from "@/components/form-fields/variations-field";
 import { SelectProduct } from "@/lib/db/types";
+import { ProductProperty } from "@/lib/core/types";
+import DeleteProductFormModal from "../delete-product/modal";
 
 interface UpdateProductFormProps {
   modalState: UseOverlayStateReturn;
   namespace: string;
   product: SelectProduct;
+  properties: ProductProperty[];
 }
 
 export default function UpdateProductForm({
   modalState,
   namespace,
   product,
+  properties,
 }: UpdateProductFormProps) {
   const router = useRouter();
   const uploaderRef = useRef<ProductImageUploaderRef>(null);
@@ -44,13 +51,14 @@ export default function UpdateProductForm({
     },
   });
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const { imageUrls, removedPaths } = (await uploaderRef.current?.prepareSubmit()) ?? {
-      imageUrls: [],
-      removedPaths: [],
-    };
+    const { imageUrls, removedPaths } =
+      (await uploaderRef.current?.prepareSubmit()) ?? {
+        imageUrls: [],
+        removedPaths: [],
+      };
     imageUrls.forEach((url) => formData.append("imageUrl", url));
     removedPaths.forEach((path) => formData.append("removedImagePath", path));
     startTransition(() => dispatch(formData));
@@ -110,7 +118,13 @@ export default function UpdateProductForm({
         )}
       </TextField>
 
-      <ProductImageUploader ref={uploaderRef} namespace={namespace} initialImages={product.images} />
+      <ProductImageUploader
+        ref={uploaderRef}
+        namespace={namespace}
+        initialImages={product.images}
+      />
+
+      <VariationsField properties={properties} initialVariations={product.variations} />
 
       <Switch name="published" defaultSelected={state.fieldValues?.published}>
         {({ isSelected }) => (
@@ -122,7 +136,7 @@ export default function UpdateProductForm({
           </>
         )}
       </Switch>
-      <div className="flex justify-end gap-2">
+      <div className="w-full flex justify-end gap-2">
         <CancelButton onCancel={modalState.close} />
         <SubmitButton isLoading={isLoading} />
       </div>
