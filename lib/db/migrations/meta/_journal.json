@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1773698575339,
+      "tag": "0000_cynical_piledriver",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1773701529791,
+      "tag": "0001_pale_nuke",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773704029669,
+      "tag": "0002_busy_clea",
+      "breakpoints": true
+    }
+  ]
+}
