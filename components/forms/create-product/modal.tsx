@@ -4,16 +4,11 @@ import { Button, useOverlayState } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import ResponsiveModal from "@/components/layout/responsive-modal";
 import CreateProductForm from "./form";
-import { ProductProperty } from "@/lib/core/types";
+import { useDashboard } from "@/app/[namespace]/dashboard/context";
 
-export default function CreateProductFormModal({
-  namespace,
-  properties,
-}: {
-  namespace: string;
-  properties: ProductProperty[];
-}) {
+export default function CreateProductFormModal() {
   const modalState = useOverlayState();
+  const { environment, taxCodes } = useDashboard();
 
   return (
     <>
@@ -27,7 +22,11 @@ export default function CreateProductFormModal({
         description="Enter the fields to create a new product"
         modalState={modalState}
       >
-        <CreateProductForm namespace={namespace} modalState={modalState} properties={properties} />
+        <CreateProductForm
+          namespace={environment.namespace}
+          modalState={modalState}
+          taxCodes={taxCodes}
+        />
       </ResponsiveModal>
     </>
   );

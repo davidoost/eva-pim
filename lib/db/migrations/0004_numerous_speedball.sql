@@ -1,0 +1,1 @@
+ALTER TABLE "pim_products" ADD COLUMN "tax_code" text;

@@ -6,6 +6,7 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import debounce from "debounce";
 import { ProductsTable, ProductsTableProps } from "./table";
 import CreateProductFormModal from "@/components/forms/create-product/modal";
+import { useDashboard } from "@/app/[namespace]/dashboard/context";
 
 export function SearchableProductsTable(props: ProductsTableProps) {
   const router = useRouter();
@@ -49,8 +50,7 @@ export function SearchableProductsTable(props: ProductsTableProps) {
             </SearchField.Group>
           </SearchField>
         </div>
-
-        <CreateProductFormModal namespace={props.namespace} properties={props.properties} />
+        <CreateProductFormModal />
       </div>
       <ProductsTable {...props} />
     </div>

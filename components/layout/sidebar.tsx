@@ -16,6 +16,8 @@ type SidebarItem = {
 const items: SidebarItem[] = [
   { label: "Overview", slug: "", icon: "hugeicons:home-07" },
   { label: "Products", slug: "products", icon: "hugeicons:package" },
+  { label: "Sync", slug: "sync", icon: "hugeicons:cloud-upload" },
+  { label: "Settings", slug: "settings", icon: "hugeicons:settings-02" },
 ];
 
 export default function Sidebar() {

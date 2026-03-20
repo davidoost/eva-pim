@@ -1,0 +1,1 @@
+ALTER TABLE "pim_sync_runs" ADD COLUMN "request_payload" jsonb;

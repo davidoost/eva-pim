@@ -1,7 +1,6 @@
 import DashboardPageHeader from "@/components/layout/dashboard-page-header";
 import { SearchableProductsTable } from "@/components/tables/products";
 import { core } from "@/lib/core";
-import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 
 interface ProductsPageProps {
@@ -14,9 +13,8 @@ export default async function ProductsPage({ params }: ProductsPageProps) {
   const env = await core.getEnvironmentByNamespace(namespace);
   if (!env) notFound();
 
-  const [products, properties] = await Promise.all([
+  const [products] = await Promise.all([
     env.listProducts(),
-    env.listProductProperties(await cookies()),
   ]);
 
   return (
@@ -26,7 +24,7 @@ export default async function ProductsPage({ params }: ProductsPageProps) {
         description="Manage your product catalog"
       />
 
-      <SearchableProductsTable products={products} namespace={namespace} properties={properties} />
+      <SearchableProductsTable products={products} namespace={namespace} />
     </>
   );
 }

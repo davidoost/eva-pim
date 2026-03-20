@@ -3,15 +3,32 @@
 import DeleteProductFormModal from "@/components/forms/delete-product/modal";
 import UpdateProductFormModal from "@/components/forms/update-product/modal";
 import { SelectProduct } from "@/lib/db/types";
-import { ProductProperty } from "@/lib/core/types";
-import { EmptyState, Pagination, Table } from "@heroui/react";
+import { Badge, Chip, EmptyState, Pagination, Table } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { useEffect, useMemo, useState } from "react";
+import { useDashboard } from "@/app/[namespace]/dashboard/context";
+
+function ProductStatus({ product }: { product: SelectProduct }) {
+  if (!product.lastSyncedAt) {
+    return <Chip variant="soft">Draft</Chip>;
+  }
+  if (product.lastUpdatedAt > product.lastSyncedAt) {
+    return (
+      <Chip variant="soft" color="warning">
+        Changed
+      </Chip>
+    );
+  }
+  return (
+    <Chip variant="soft" color="success">
+      Up to date
+    </Chip>
+  );
+}
 
 export interface ProductsTableProps {
   namespace: string;
   products: SelectProduct[];
-  properties: ProductProperty[];
   pageSize?: number;
 }
 
@@ -19,8 +36,8 @@ export function ProductsTable({
   products,
   pageSize = 10,
   namespace,
-  properties,
 }: ProductsTableProps) {
+  const { taxCodes } = useDashboard();
   const [page, setPage] = useState(1);
 
   useEffect(() => {
@@ -42,7 +59,10 @@ export function ProductsTable({
         <Table.Content>
           <Table.Header>
             <Table.Column isRowHeader>Name</Table.Column>
-            <Table.Column>Created</Table.Column>
+            <Table.Column>Variations</Table.Column>
+            <Table.Column>Status</Table.Column>
+            <Table.Column>Updated</Table.Column>
+            <Table.Column>Synced</Table.Column>
             <Table.Column />
           </Table.Header>
           <Table.Body
@@ -59,13 +79,37 @@ export function ProductsTable({
             {paginatedItems.map((product) => (
               <Table.Row key={product.id} className="group">
                 <Table.Cell>{product.name}</Table.Cell>
-                <Table.Cell>{product.createdAt.toString()}</Table.Cell>
+                <Table.Cell>
+                  {product.childrenVariationProperty ? (
+                    product.children.length > 0 &&
+                    product.children[0].childrenVariationProperty ? (
+                      `${product.childrenVariationProperty} × ${product.children[0].childrenVariationProperty}`
+                    ) : (
+                      product.childrenVariationProperty
+                    )
+                  ) : (
+                    <span className="text-muted">—</span>
+                  )}
+                </Table.Cell>
+                <Table.Cell>
+                  <ProductStatus product={product} />
+                </Table.Cell>
+                <Table.Cell>
+                  {product.lastUpdatedAt.toLocaleDateString()}
+                </Table.Cell>
+                <Table.Cell>
+                  {product.lastSyncedAt ? (
+                    product.lastSyncedAt.toLocaleDateString()
+                  ) : (
+                    <span className="text-muted">—</span>
+                  )}
+                </Table.Cell>
                 <Table.Cell>
                   <div className="flex">
                     <UpdateProductFormModal
-                      product={product}
                       namespace={namespace}
-                      properties={properties}
+                      product={product}
+                      taxCodes={taxCodes}
                     />
                     <DeleteProductFormModal
                       namespace={namespace}

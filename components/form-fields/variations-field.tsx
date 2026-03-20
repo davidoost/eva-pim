@@ -26,7 +26,6 @@ import { CSS } from "@dnd-kit/utilities";
 import { Icon } from "@iconify/react";
 import { useState } from "react";
 import { ProductProperty } from "@/lib/core/types";
-import { SelectProductVariation } from "@/lib/db/types";
 
 type ValueItem = { id: string; value: string };
 type VariationGroup = { id: string; property: string; values: ValueItem[] };
@@ -89,7 +88,7 @@ export default function VariationsField({
   initialVariations = [],
 }: {
   properties: ProductProperty[];
-  initialVariations?: SelectProductVariation[];
+  initialVariations?: { variationProperty: string; variationValue: string; sequence: number }[];
 }) {
   const [groups, setGroups] = useState<VariationGroup[]>(() => {
     const map = new Map<string, ValueItem[]>();

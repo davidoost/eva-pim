@@ -1,118 +1,174 @@
 "use client";
 
 import {
-  Modal,
-  TextField,
-  Label,
-  Input,
+  ComboBox,
   ErrorMessage,
-  TextArea,
+  Input,
+  Label,
+  ListBox,
   Switch,
-  toast,
-  useOverlayState,
+  TextArea,
+  TextField,
   UseOverlayStateReturn,
+  toast,
 } from "@heroui/react";
-import { startTransition, useActionState, useEffect, useRef, useState } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { createProduct } from "./action";
+import ProductImageUploader, {
+  ProductImageUploaderRef,
+} from "@/components/form-fields/product-image-uploader";
+import { TaxCode } from "@/lib/core/types";
+import { createProductAction } from "@/app/[namespace]/dashboard/products/new/actions";
 import CancelButton from "@/components/form-fields/cancel-button";
 import SubmitButton from "@/components/form-fields/submit-button";
-import ProductImageUploader, { ProductImageUploaderRef } from "@/components/form-fields/product-image-uploader";
-import VariationsField from "@/components/form-fields/variations-field";
-import { ProductProperty } from "@/lib/core/types";
+import VariationsEditor, {
+  VariationLevel,
+} from "@/components/forms/variations-editor";
 
-interface CreateProductForm {
+interface CreateProductFormProps {
   modalState: UseOverlayStateReturn;
   namespace: string;
-  properties: ProductProperty[];
+  taxCodes: TaxCode[];
 }
 
 export default function CreateProductForm({
   modalState,
   namespace,
-  properties,
-}: CreateProductForm) {
+  taxCodes,
+}: CreateProductFormProps) {
   const router = useRouter();
   const uploaderRef = useRef<ProductImageUploaderRef>(null);
-
-  const formAction = createProduct.bind(null, namespace);
-
-  const [state, dispatch, isPending] = useActionState(formAction, {
-    status: "default",
-  });
+  const [isPending, startTransition] = useTransition();
   const [isUploading, setIsUploading] = useState(false);
-  const isLoading = isUploading || isPending;
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  const [name, setName] = useState("");
+  const [brand, setBrand] = useState("");
+  const [taxCode, setTaxCode] = useState("");
+  const [shortDescription, setShortDescription] = useState("");
+  const [longDescription, setLongDescription] = useState("");
+  const [published, setPublished] = useState(true);
+  const [variations, setVariations] = useState<VariationLevel[]>([]);
+  const [nameError, setNameError] = useState<string | undefined>();
+
+  const isLoading = isPending || isUploading;
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!name.trim()) {
+      setNameError("Name is required");
+      return;
+    }
+    setNameError(undefined);
     setIsUploading(true);
-    const formData = new FormData(e.currentTarget);
-    const { imageUrls } = (await uploaderRef.current?.prepareSubmit()) ?? { imageUrls: [] };
-    imageUrls.forEach((url) => formData.append("imageUrl", url));
+    const { imageUrls = [] } =
+      (await uploaderRef.current?.prepareSubmit()) ?? {};
     setIsUploading(false);
-    startTransition(() => dispatch(formData));
+
+    const [primary, secondary] = variations;
+    const validValues = primary?.values.filter((v) => v.trim()) ?? [];
+    const validSecondaryValues =
+      secondary?.values.filter((v) => v.trim()) ?? [];
+
+    startTransition(async () => {
+      const result = await createProductAction(namespace, {
+        name: name.trim(),
+        brand: brand.trim() || undefined,
+        taxCode: taxCode || undefined,
+        shortDescription: shortDescription.trim() || undefined,
+        longDescription: longDescription.trim() || undefined,
+        published,
+        imageUrls,
+        variants:
+          primary && validValues.length > 0
+            ? { property: primary.property.trim(), values: validValues }
+            : undefined,
+        secondaryVariants:
+          secondary && validSecondaryValues.length > 0
+            ? {
+                property: secondary.property.trim(),
+                values: validSecondaryValues,
+              }
+            : undefined,
+      });
+      if (result.success) {
+        toast.success("Product created");
+        modalState.close();
+        router.refresh();
+      } else {
+        toast.danger(result.error ?? "Something went wrong");
+      }
+    });
   }
-
-  useEffect(() => {
-    if (state.status === "success") {
-      toast.success("Product created");
-      modalState.close();
-      router.refresh();
-    }
-
-    if (state.status === "error") {
-      toast.danger("Error creating product");
-    }
-  }, [state]);
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-      <TextField
-        variant="secondary"
-        name="name"
-        defaultValue={state.fieldValues?.name}
-      >
+      <TextField variant="secondary" isRequired>
         <Label>Name</Label>
-        <Input placeholder="Skippy ball" />
-        {state.fieldErrors?.name && (
-          <ErrorMessage>{state.fieldErrors.name.errors[0]}</ErrorMessage>
-        )}
+        <Input
+          value={name}
+          onChange={(e) => {
+            setName(e.target.value);
+            setNameError(undefined);
+          }}
+          placeholder="e.g. Classic T-Shirt"
+        />
+        {nameError && <ErrorMessage>{nameError}</ErrorMessage>}
       </TextField>
 
-      <TextField
-        variant="secondary"
-        name="shortDescription"
-        defaultValue={state.fieldValues?.shortDescription}
+      <TextField variant="secondary">
+        <Label>Brand</Label>
+        <Input
+          value={brand}
+          onChange={(e) => setBrand(e.target.value)}
+          placeholder="e.g. Acme"
+        />
+      </TextField>
+
+      <ComboBox
+        value={taxCode}
+        onChange={(k) => setTaxCode(k as string)}
+        fullWidth
       >
+        <Label>Tax Code</Label>
+        <ComboBox.InputGroup>
+          <Input placeholder="Search tax code..." variant="secondary" />
+          <ComboBox.Trigger />
+        </ComboBox.InputGroup>
+        <ComboBox.Popover>
+          <ListBox>
+            {taxCodes.map((t) => (
+              <ListBox.Item key={t.Name} id={t.Name} textValue={t.Name}>
+                {t.Name}
+                <ListBox.ItemIndicator />
+              </ListBox.Item>
+            ))}
+          </ListBox>
+        </ComboBox.Popover>
+      </ComboBox>
+
+      <TextField variant="secondary">
         <Label>Short Description</Label>
-        <Input placeholder="Big bulky boinker" />
-        {state.fieldErrors?.shortDescription && (
-          <ErrorMessage>
-            {state.fieldErrors.shortDescription.errors[0]}
-          </ErrorMessage>
-        )}
+        <Input
+          value={shortDescription}
+          onChange={(e) => setShortDescription(e.target.value)}
+          placeholder="Brief summary"
+        />
       </TextField>
 
-      <TextField
-        variant="secondary"
-        name="longDescription"
-        defaultValue={state.fieldValues?.longDescription}
-      >
+      <TextField variant="secondary">
         <Label>Long Description</Label>
-        <TextArea rows={4} placeholder="Big bulky boinker but longer" />
-        {state.fieldErrors?.longDescription && (
-          <ErrorMessage>
-            {state.fieldErrors.longDescription.errors[0]}
-          </ErrorMessage>
-        )}
+        <TextArea
+          rows={3}
+          value={longDescription}
+          onChange={(e) => setLongDescription(e.target.value)}
+          placeholder="Full product description"
+        />
       </TextField>
 
       <ProductImageUploader ref={uploaderRef} namespace={namespace} />
 
-      <VariationsField properties={properties} />
-
-      <Switch name="published" defaultSelected={state.fieldValues?.published}>
-        {({ isSelected }) => (
+      <Switch isSelected={published} onChange={(v) => setPublished(v)}>
+        {() => (
           <>
             <Switch.Control>
               <Switch.Thumb />
@@ -121,6 +177,9 @@ export default function CreateProductForm({
           </>
         )}
       </Switch>
+
+      <VariationsEditor variations={variations} onChange={setVariations} />
+
       <div className="flex justify-end gap-2">
         <CancelButton onCancel={modalState.close} />
         <SubmitButton isLoading={isLoading} />
