@@ -63,10 +63,10 @@ function RunDetailsModal({ run }: { run: SelectSyncRun }) {
             </span>
 
             <span className="text-muted">Started</span>
-            <span>{run.startedAt?.toLocaleString() ?? "—"}</span>
+            <span>{run.startedAt?.toLocaleString("en-GB") ?? "—"}</span>
 
             <span className="text-muted">Completed</span>
-            <span>{run.completedAt?.toLocaleString() ?? "—"}</span>
+            <span>{run.completedAt?.toLocaleString("en-GB") ?? "—"}</span>
 
             {run.error && (
               <>
@@ -148,10 +148,10 @@ export function SyncRunsTable({
                 </Table.Cell>
                 <Table.Cell>{run.productsSubmitted ?? "—"}</Table.Cell>
                 <Table.Cell>
-                  {run.startedAt?.toLocaleString() ?? "—"}
+                  {run.startedAt?.toLocaleString("en-GB") ?? "—"}
                 </Table.Cell>
                 <Table.Cell>
-                  {run.completedAt?.toLocaleString() ?? "—"}
+                  {run.completedAt?.toLocaleString("en-GB") ?? "—"}
                 </Table.Cell>
                 <Table.Cell>
                   <RunDetailsModal run={run} />

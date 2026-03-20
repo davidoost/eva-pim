@@ -1,33 +1,13 @@
 "use client";
 
-import DeleteProductFormModal from "@/components/forms/delete-product/modal";
-import UpdateProductFormModal from "@/components/forms/update-product/modal";
 import { SelectProduct } from "@/lib/db/types";
-import { Badge, Chip, EmptyState, Pagination, Table } from "@heroui/react";
+import { EmptyState, Pagination, Table } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { useEffect, useMemo, useState } from "react";
 import { useDashboard } from "@/app/[namespace]/dashboard/context";
-
-function ProductStatus({ product }: { product: SelectProduct }) {
-  if (!product.lastSyncedAt) {
-    return <Chip variant="soft">Draft</Chip>;
-  }
-  if (product.lastUpdatedAt > product.lastSyncedAt) {
-    return (
-      <Chip variant="soft" color="warning">
-        Changed
-      </Chip>
-    );
-  }
-  return (
-    <Chip variant="soft" color="success">
-      Up to date
-    </Chip>
-  );
-}
+import ProductStatusChip from "@/components/product-status-chip";
 
 export interface ProductsTableProps {
-  namespace: string;
   products: SelectProduct[];
   pageSize?: number;
 }
@@ -35,9 +15,8 @@ export interface ProductsTableProps {
 export function ProductsTable({
   products,
   pageSize = 10,
-  namespace,
 }: ProductsTableProps) {
-  const { taxCodes } = useDashboard();
+  const { environment } = useDashboard();
   const [page, setPage] = useState(1);
 
   useEffect(() => {
@@ -63,7 +42,6 @@ export function ProductsTable({
             <Table.Column>Status</Table.Column>
             <Table.Column>Updated</Table.Column>
             <Table.Column>Synced</Table.Column>
-            <Table.Column />
           </Table.Header>
           <Table.Body
             renderEmptyState={() => (
@@ -77,7 +55,11 @@ export function ProductsTable({
             )}
           >
             {paginatedItems.map((product) => (
-              <Table.Row key={product.id} className="group">
+              <Table.Row
+                key={product.id}
+                href={`/${environment.namespace}/dashboard/products/${product.id}`}
+                className="group hover:cursor-pointer"
+              >
                 <Table.Cell>{product.name}</Table.Cell>
                 <Table.Cell>
                   {product.childrenVariationProperty ? (
@@ -92,30 +74,17 @@ export function ProductsTable({
                   )}
                 </Table.Cell>
                 <Table.Cell>
-                  <ProductStatus product={product} />
+                  <ProductStatusChip product={product} />
                 </Table.Cell>
                 <Table.Cell>
-                  {product.lastUpdatedAt.toLocaleDateString()}
+                  {product.lastUpdatedAt.toLocaleDateString("en-GB")}
                 </Table.Cell>
                 <Table.Cell>
                   {product.lastSyncedAt ? (
-                    product.lastSyncedAt.toLocaleDateString()
+                    product.lastSyncedAt.toLocaleDateString("en-GB")
                   ) : (
                     <span className="text-muted">—</span>
                   )}
-                </Table.Cell>
-                <Table.Cell>
-                  <div className="flex">
-                    <UpdateProductFormModal
-                      namespace={namespace}
-                      product={product}
-                      taxCodes={taxCodes}
-                    />
-                    <DeleteProductFormModal
-                      namespace={namespace}
-                      productId={product.id}
-                    />
-                  </div>
                 </Table.Cell>
               </Table.Row>
             ))}

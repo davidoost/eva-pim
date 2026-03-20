@@ -88,10 +88,10 @@ function LastSyncCard({
             </div>
 
             <span className="text-muted">Started</span>
-            <span>{run.startedAt?.toLocaleString() ?? "—"}</span>
+            <span>{run.startedAt?.toLocaleString("en-GB") ?? "—"}</span>
 
             <span className="text-muted">Completed</span>
-            <span>{run.completedAt?.toLocaleString() ?? "—"}</span>
+            <span>{run.completedAt?.toLocaleString("en-GB") ?? "—"}</span>
 
             <span className="text-muted">Products submitted</span>
             <span>{run.productsSubmitted ?? "—"}</span>

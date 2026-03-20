@@ -13,9 +13,7 @@ export default async function ProductsPage({ params }: ProductsPageProps) {
   const env = await core.getEnvironmentByNamespace(namespace);
   if (!env) notFound();
 
-  const [products] = await Promise.all([
-    env.listProducts(),
-  ]);
+  const products = await env.listProducts();
 
   return (
     <>
@@ -24,7 +22,7 @@ export default async function ProductsPage({ params }: ProductsPageProps) {
         description="Manage your product catalog"
       />
 
-      <SearchableProductsTable products={products} namespace={namespace} />
+      <SearchableProductsTable products={products} />
     </>
   );
 }

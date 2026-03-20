@@ -17,28 +17,29 @@ import ProductImageUploader, {
   ProductImageUploaderRef,
 } from "@/components/form-fields/product-image-uploader";
 import { SelectProduct } from "@/lib/db/types";
-import { TaxCode } from "@/lib/core/types";
+import { ProductProperty, TaxCode } from "@/lib/core/types";
 import { updateProductAction } from "@/app/[namespace]/dashboard/products/[id]/edit/actions";
 import CancelButton from "@/components/form-fields/cancel-button";
 import SubmitButton from "@/components/form-fields/submit-button";
-import DeleteProductFormModal from "../delete-product/modal";
 import VariationsEditor, {
   VariationLevel,
 } from "@/components/forms/variations-editor";
+import { useDashboard } from "@/app/[namespace]/dashboard/context";
 
 interface UpdateProductFormProps {
   modalState: UseOverlayStateReturn;
-  namespace: string;
   product: SelectProduct;
   taxCodes: TaxCode[];
+  productProperties: ProductProperty[];
 }
 
 export default function UpdateProductForm({
   modalState,
-  namespace,
   product,
   taxCodes,
+  productProperties,
 }: UpdateProductFormProps) {
+  const { environment } = useDashboard();
   const router = useRouter();
   const uploaderRef = useRef<ProductImageUploaderRef>(null);
   const [isPending, startTransition] = useTransition();
@@ -60,7 +61,9 @@ export default function UpdateProductForm({
     if (product.children.length > 0) {
       levels.push({
         property: product.childrenVariationProperty ?? "",
-        values: product.children.map((c) => c.variationValue ?? "").filter(Boolean),
+        values: product.children
+          .map((c) => c.variationValue ?? "")
+          .filter(Boolean),
       });
       if (product.children[0]?.children.length > 0) {
         levels.push({
@@ -85,30 +88,35 @@ export default function UpdateProductForm({
 
     const [primary, secondary] = variations;
     const validValues = primary?.values.filter((v) => v.trim()) ?? [];
-    const validSecondaryValues = secondary?.values.filter((v) => v.trim()) ?? [];
+    const validSecondaryValues =
+      secondary?.values.filter((v) => v.trim()) ?? [];
 
     startTransition(async () => {
-      const result = await updateProductAction(namespace, product.id, {
-        name: name.trim(),
-        brand: brand.trim() || undefined,
-        taxCode: taxCode || undefined,
-        shortDescription: shortDescription.trim() || undefined,
-        longDescription: longDescription.trim() || undefined,
-        published,
-        imageUrls,
-        removedImagePaths: removedPaths,
-        variants:
-          primary && validValues.length > 0
-            ? { property: primary.property.trim(), values: validValues }
-            : undefined,
-        secondaryVariants:
-          secondary && validSecondaryValues.length > 0
-            ? {
-                property: secondary.property.trim(),
-                values: validSecondaryValues,
-              }
-            : undefined,
-      });
+      const result = await updateProductAction(
+        environment.namespace,
+        product.id,
+        {
+          name: name.trim(),
+          brand: brand.trim() || undefined,
+          taxCode: taxCode || undefined,
+          shortDescription: shortDescription.trim() || undefined,
+          longDescription: longDescription.trim() || undefined,
+          published,
+          imageUrls,
+          removedImagePaths: removedPaths,
+          variants:
+            primary && validValues.length > 0
+              ? { property: primary.property.trim(), values: validValues }
+              : undefined,
+          secondaryVariants:
+            secondary && validSecondaryValues.length > 0
+              ? {
+                  property: secondary.property.trim(),
+                  values: validSecondaryValues,
+                }
+              : undefined,
+        },
+      );
       if (result.success) {
         toast.success("Product updated");
         modalState.close();
@@ -139,7 +147,11 @@ export default function UpdateProductForm({
         />
       </TextField>
 
-      <ComboBox value={taxCode} onChange={(k) => setTaxCode(k as string)} fullWidth>
+      <ComboBox
+        value={taxCode}
+        onChange={(k) => setTaxCode(k as string)}
+        fullWidth
+      >
         <Label>Tax Code</Label>
         <ComboBox.InputGroup>
           <Input placeholder="Search tax code..." variant="secondary" />
@@ -176,11 +188,7 @@ export default function UpdateProductForm({
         />
       </TextField>
 
-      <ProductImageUploader
-        ref={uploaderRef}
-        namespace={namespace}
-        initialImages={product.images}
-      />
+      <ProductImageUploader ref={uploaderRef} initialImages={product.images} />
 
       <Switch isSelected={published} onChange={(v) => setPublished(v)}>
         {() => (
@@ -195,12 +203,9 @@ export default function UpdateProductForm({
 
       <VariationsEditor variations={variations} onChange={setVariations} />
 
-      <div className="w-full flex justify-between gap-2">
-        <DeleteProductFormModal namespace={namespace} productId={product.id} />
-        <div className="flex gap-2">
-          <CancelButton onCancel={modalState.close} />
-          <SubmitButton isLoading={isLoading} />
-        </div>
+      <div className="w-full flex justify-end gap-2">
+        <CancelButton onCancel={modalState.close} />
+        <SubmitButton isLoading={isLoading} />
       </div>
     </form>
   );

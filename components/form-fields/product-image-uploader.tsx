@@ -20,6 +20,7 @@ import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { uploadProductImage } from "@/lib/supabase/actions";
 import { SelectProductImage } from "@/lib/db/types";
 import { Badge, Chip, Label } from "@heroui/react";
+import { useDashboard } from "@/app/[namespace]/dashboard/context";
 
 type ImageItem =
   | { kind: "existing"; id: string; previewUrl: string; storagePath: string }
@@ -131,8 +132,9 @@ function UploadTile({ onFiles }: { onFiles: (files: FileList) => void }) {
 
 const ProductImageUploader = forwardRef<
   ProductImageUploaderRef,
-  { namespace: string; initialImages?: SelectProductImage[] }
->(function ProductImageUploader({ namespace, initialImages = [] }, ref) {
+  { initialImages?: SelectProductImage[] }
+>(function ProductImageUploader({ initialImages = [] }, ref) {
+  const { environment } = useDashboard();
   const [items, setItems] = useState<ImageItem[]>(() =>
     [...initialImages]
       .sort((a, b) => a.sequence - b.sequence)
@@ -154,7 +156,7 @@ const ProductImageUploader = forwardRef<
           if (item.kind === "existing") return item.previewUrl;
           const fd = new FormData();
           fd.append("file", item.file);
-          const result = await uploadProductImage(fd, namespace);
+          const result = await uploadProductImage(fd, environment.namespace);
           return result?.url ?? null;
         }),
       );

@@ -165,7 +165,7 @@ export default function CreateProductForm({
         />
       </TextField>
 
-      <ProductImageUploader ref={uploaderRef} namespace={namespace} />
+      <ProductImageUploader ref={uploaderRef} />
 
       <Switch isSelected={published} onChange={(v) => setPublished(v)}>
         {() => (

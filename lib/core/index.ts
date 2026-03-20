@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, isNull, or } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, lt, or } from "drizzle-orm";
 import { environments, productImages, products, syncRuns } from "../db/schema";
 import {
   InsertEnvironment,
@@ -639,7 +639,18 @@ class CEnvironment {
       const allProducts = await db
         .select()
         .from(products)
-        .where(eq(products.environmentId, this.data.id));
+        .where(
+          and(
+            eq(products.environmentId, this.data.id),
+            // Exclude deleted products already synced after deletion
+            or(
+              isNull(products.isDeleted),
+              eq(products.isDeleted, false),
+              isNull(products.lastSyncedAt),
+              lt(products.lastSyncedAt, products.lastUpdatedAt),
+            ),
+          ),
+        );
 
       const productIds = allProducts.map((p) => p.id);
       if (productIds.length === 0) return [];
@@ -864,29 +875,21 @@ class CEnvironment {
 
           const now = new Date();
 
-          const createdEvaIds: string[] = data.CreatedProductIDs ?? [];
-          if (createdEvaIds.length > 0) {
-            for (const evaId of createdEvaIds) {
-              const backendId = backendById.get(evaId);
-              if (!backendId) continue;
-              await db
-                .update(products)
-                .set({ evaId, lastSyncedAt: now, lastUpdatedAt: now })
-                .where(eq(products.id, backendId));
-            }
-          }
+          // Mark all submitted products as synced
+          await db
+            .update(products)
+            .set({ lastSyncedAt: now })
+            .where(eq(products.environmentId, this.data.id));
 
-          const updatedEvaIds: string[] = data.UpdatedProductIDs ?? [];
-          if (updatedEvaIds.length > 0) {
-            const updatedBackendIds = updatedEvaIds
-              .map((id) => backendById.get(id))
-              .filter((id): id is string => !!id);
-            if (updatedBackendIds.length > 0) {
-              await db
-                .update(products)
-                .set({ lastSyncedAt: now, lastUpdatedAt: now })
-                .where(inArray(products.id, updatedBackendIds));
-            }
+          // Set evaId for newly created products
+          const createdEvaIds: string[] = data.CreatedProductIDs ?? [];
+          for (const evaId of createdEvaIds) {
+            const backendId = backendById.get(evaId);
+            if (!backendId) continue;
+            await db
+              .update(products)
+              .set({ evaId })
+              .where(eq(products.id, backendId));
           }
         }
 

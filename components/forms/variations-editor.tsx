@@ -26,6 +26,7 @@ export default function VariationsEditor({
   variations,
   onChange,
 }: VariationsEditorProps) {
+  const { productProperties } = useDashboard();
   function updateProperty(index: number, value: string) {
     const next = [...variations];
     next[index] = { ...next[index], property: value };
@@ -65,8 +66,6 @@ export default function VariationsEditor({
   function addLevel() {
     onChange([...variations, { property: "", values: [""] }]);
   }
-
-  const { productProperties } = useDashboard();
 
   return (
     <div className="flex flex-col gap-3">

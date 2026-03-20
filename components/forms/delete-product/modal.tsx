@@ -3,19 +3,19 @@
 import { Button, useOverlayState } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import ResponsiveModal from "@/components/layout/responsive-modal";
-import { SelectEnvironment, SelectProduct } from "@/lib/db/types";
+import { SelectProduct } from "@/lib/db/types";
 import DeleteProductForm from "./form";
+import { useDashboard } from "@/app/[namespace]/dashboard/context";
 
 interface DeleteProductFormModalProps {
-  namespace: SelectEnvironment["namespace"];
   productId: SelectProduct["id"];
 }
 
 export default function DeleteProductFormModal({
-  namespace,
   productId,
 }: DeleteProductFormModalProps) {
   const modalState = useOverlayState();
+  const { environment } = useDashboard();
 
   return (
     <>
@@ -35,7 +35,7 @@ export default function DeleteProductFormModal({
       >
         <DeleteProductForm
           modalState={modalState}
-          namespace={namespace}
+          namespace={environment.namespace}
           productId={productId}
         />
       </ResponsiveModal>

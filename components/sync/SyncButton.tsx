@@ -21,7 +21,7 @@ export default function SyncButton({ namespace }: SyncButtonProps) {
   const [statusLabel, setStatusLabel] = useState<string | null>(null);
   const { user } = useDashboard();
 
-  const syncAllowed = hasScope(user, "importproducts", 0);
+  const syncAllowed = hasScope(user, "ImportProducts", 0);
 
   async function handleSync() {
     if (isLoading) return;

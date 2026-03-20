@@ -4,17 +4,17 @@ import { Button, useOverlayState } from "@heroui/react";
 import ResponsiveModal from "@/components/layout/responsive-modal";
 import UpdateProductForm from "./form";
 import { SelectProduct } from "@/lib/db/types";
-import { TaxCode } from "@/lib/core/types";
+import { ProductProperty, TaxCode } from "@/lib/core/types";
 import { Icon } from "@iconify/react";
 
 export default function UpdateProductFormModal({
-  namespace,
   product,
   taxCodes,
+  productProperties,
 }: {
-  namespace: string;
   product: SelectProduct;
   taxCodes: TaxCode[];
+  productProperties: ProductProperty[];
 }) {
   const modalState = useOverlayState();
 
@@ -30,10 +30,10 @@ export default function UpdateProductFormModal({
         modalState={modalState}
       >
         <UpdateProductForm
-          namespace={namespace}
           product={product}
           taxCodes={taxCodes}
           modalState={modalState}
+          productProperties={productProperties}
         />
       </ResponsiveModal>
     </>
