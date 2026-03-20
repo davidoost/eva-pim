@@ -13,7 +13,7 @@ import {
 import { db } from "../db";
 import { deleteCookies, setCookies } from "../cookies";
 import { ReadonlyRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
-import { CallEvaServiceProps, ProductProperty, TaxCode } from "./types";
+import { CallEvaServiceProps, ProductProperty, TaxCode, User } from "./types";
 import { buildPayload } from "../eva/payload-builder";
 
 class CCore {
@@ -100,7 +100,7 @@ class CEnvironment {
     const requestBody = {
       Username: username,
       Password: password,
-      SelectFirstOrganizationUnit: true,
+      OrganizationUnitID: "1",
       useJwtTokens: true,
     };
 
@@ -609,6 +609,23 @@ class CEnvironment {
     }
 
     return data.Result.Page as TaxCode[];
+  }
+
+  public async getCurrentUser(
+    cookies: ReadonlyRequestCookies,
+  ): Promise<User | null> {
+    const data = await this.callEvaService({
+      service: "getcurrentuser",
+      cookies,
+    });
+
+    console.log(data.User.ScopedFunctionalities);
+
+    if (!data) {
+      return null;
+    }
+
+    return data as User;
   }
 
   // -------------------------------------------------------------------------

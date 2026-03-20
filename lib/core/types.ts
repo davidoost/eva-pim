@@ -24,3 +24,21 @@ export interface CallEvaServiceProps {
   cookies?: ReadonlyRequestCookies;
   type?: "message" | "async-message" | "async-result";
 }
+
+export enum Scope {
+  None = 0,
+  Create = 1,
+  Edit = 2,
+  Delete = 4,
+  View = 8,
+  Manage = 31, // 1 | 2 | 4 | 8 (+0)
+  Settings = 32,
+  Scripting = 64,
+  All = 127,
+}
+
+export type Functionalities = Record<string, number>;
+
+export type User = {
+  ScopedFunctionalities: Functionalities;
+};

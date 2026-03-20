@@ -23,11 +23,13 @@ export default async function DashboardLayout({
   ]);
   if (!environment) notFound();
 
-  const [productProperties, products, taxCodes] = await Promise.all([
-    environment.listProductProperties(cookieStore),
-    environment.listProducts(),
-    environment.listTaxCodes(cookieStore),
-  ]);
+  const [productProperties, products, taxCodes, currentUser] =
+    await Promise.all([
+      environment.listProductProperties(cookieStore),
+      environment.listProducts(),
+      environment.listTaxCodes(cookieStore),
+      environment.getCurrentUser(cookieStore),
+    ]);
 
   return (
     <div className="w-full max-w-7xl flex max-h-dvh gap-4">
