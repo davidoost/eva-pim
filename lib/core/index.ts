@@ -89,7 +89,9 @@ class CEnvironment {
       });
 
       const json = await res.json();
+
       if (!res.ok) console.error("[EVA]:", JSON.stringify(json));
+
       return json;
     } catch {
       return null;
@@ -108,6 +110,8 @@ class CEnvironment {
       service: "login",
       body: requestBody,
     });
+
+    console.log(data);
 
     if (!data || data.Authentication != 2) return false;
 
@@ -619,13 +623,11 @@ class CEnvironment {
       cookies,
     });
 
-    console.log(data.User.ScopedFunctionalities);
-
     if (!data) {
       return null;
     }
 
-    return data as User;
+    return data.User as User;
   }
 
   // -------------------------------------------------------------------------

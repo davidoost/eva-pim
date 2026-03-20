@@ -2,13 +2,14 @@
 
 import { SelectEnvironment, SelectProduct } from "@/lib/db/types";
 import { createContext, useContext, ReactNode } from "react";
-import { ProductProperty, TaxCode } from "@/lib/core/types";
+import { ProductProperty, TaxCode, User } from "@/lib/core/types";
 
 type DashboardContextValue = {
   environment: SelectEnvironment;
   productProperties: ProductProperty[];
   taxCodes: TaxCode[];
   products: SelectProduct[];
+  user: User;
 };
 
 const DashboardContext = createContext<DashboardContextValue | null>(null);
@@ -19,10 +20,11 @@ export function DashboardProvider({
   productProperties,
   products,
   taxCodes,
+  user,
 }: DashboardContextValue & { children: ReactNode }) {
   return (
     <DashboardContext.Provider
-      value={{ environment, productProperties, products, taxCodes }}
+      value={{ environment, productProperties, products, taxCodes, user }}
     >
       {children}
     </DashboardContext.Provider>

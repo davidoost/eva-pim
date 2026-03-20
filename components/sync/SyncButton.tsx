@@ -1,10 +1,15 @@
 "use client";
 
-import { Button, Spinner, toast } from "@heroui/react";
+import { Button, Description, Spinner, toast } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { triggerSyncAction, pollSyncAction } from "@/app/[namespace]/dashboard/sync/actions";
+import {
+  triggerSyncAction,
+  pollSyncAction,
+} from "@/app/[namespace]/dashboard/sync/actions";
+import { useDashboard } from "@/app/[namespace]/dashboard/context";
+import { hasScope } from "@/lib/utils";
 
 interface SyncButtonProps {
   namespace: string;
@@ -14,6 +19,9 @@ export default function SyncButton({ namespace }: SyncButtonProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [statusLabel, setStatusLabel] = useState<string | null>(null);
+  const { user } = useDashboard();
+
+  const syncAllowed = hasScope(user, "importproducts", 0);
 
   async function handleSync() {
     if (isLoading) return;
@@ -42,7 +50,9 @@ export default function SyncButton({ namespace }: SyncButtonProps) {
         if (attempts >= maxAttempts) {
           setStatusLabel(null);
           setIsLoading(false);
-          toast.warning("Polling timed out. Check the sync run status manually.");
+          toast.warning(
+            "Polling timed out. Check the sync run status manually.",
+          );
           router.refresh();
           return;
         }
@@ -74,17 +84,25 @@ export default function SyncButton({ namespace }: SyncButtonProps) {
   }
 
   return (
-    <Button
-      variant="tertiary"
-      onPress={handleSync}
-      isDisabled={isLoading}
-    >
-      {isLoading ? (
-        <Spinner size="sm" color="current" />
-      ) : (
-        <Icon icon="hugeicons:cloud-upload" />
+    <div className="flex flex-col items-end gap-1">
+      <Button
+        variant="tertiary"
+        onPress={handleSync}
+        isDisabled={isLoading || !syncAllowed}
+      >
+        {isLoading ? (
+          <Spinner size="sm" color="current" />
+        ) : (
+          <Icon icon="hugeicons:cloud-upload" />
+        )}
+        {isLoading ? (statusLabel ?? "Syncing…") : "Sync to EVA"}
+      </Button>
+      {!syncAllowed && (
+        <Description className="text-warning">
+          You can't trigger a synchronization because you don't have
+          theImportProducts permission.
+        </Description>
       )}
-      {isLoading ? (statusLabel ?? "Syncing…") : "Sync to EVA"}
-    </Button>
+    </div>
   );
 }

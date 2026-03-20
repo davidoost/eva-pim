@@ -31,6 +31,8 @@ export default async function DashboardLayout({
       environment.getCurrentUser(cookieStore),
     ]);
 
+  if (!currentUser) notFound();
+
   return (
     <div className="w-full max-w-7xl flex max-h-dvh gap-4">
       <DashboardProvider
@@ -38,6 +40,7 @@ export default async function DashboardLayout({
         productProperties={productProperties}
         products={products}
         taxCodes={taxCodes}
+        user={currentUser}
       >
         <Sidebar />
         <ScrollShadow

@@ -24,7 +24,12 @@ export function hasScope(
   key: string,
   requiredScope: Scope,
 ): boolean {
-  const currentScope = user.ScopedFunctionalities[key] ?? Scope.None;
+  // If the functionality is not present at all → deny
+  if (!(key in user.ScopedFunctionalities)) {
+    return false;
+  }
+
+  const currentScope = user.ScopedFunctionalities[key];
 
   // "All" always passes
   if (currentScope === Scope.All) return true;

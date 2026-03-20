@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Young_Serif } from "next/font/google";
 import "./globals.css";
-import { Toast } from "@heroui/react";
 import { Providers } from "./providers";
 
 const geist = Geist({
@@ -34,10 +33,7 @@ export default async function RootLayout({
       className={`bg-background ${geist.variable} ${youngSerif.variable} ${geist.className}`}
     >
       <body className="flex w-full min-h-dvh justify-center font-sans">
-        <Providers>
-          <Toast.Provider placement="bottom end" />
-          {children}
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
