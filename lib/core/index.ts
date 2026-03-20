@@ -768,18 +768,11 @@ class CEnvironment {
 
       payload = buildPayload(rootProducts);
 
-      const additionalHeaders = {
-        "EVA-Async-Callback": JSON.stringify({
-          endpoint_backend_id: "async_bucket",
-        }),
-      };
-
       const data = await this.callEvaService({
         service: "ImportProducts",
         body: payload,
         cookies,
         type: "async-message",
-        extraHeaders: additionalHeaders,
       });
 
       const evaError = data?.Error?.Message ?? data?.Error ?? null;
