@@ -3,7 +3,6 @@ import { ReactNode } from "react";
 import { DashboardProvider } from "./context";
 import { core } from "@/lib/core";
 import { notFound, redirect } from "next/navigation";
-import { cookies } from "next/headers";
 
 interface DashboardLayoutProps {
   params: Promise<{ namespace: string }>;
@@ -16,19 +15,16 @@ export default async function DashboardLayout({
 }: DashboardLayoutProps) {
   const { namespace } = await params;
 
-  const [environment, cookieStore] = await Promise.all([
-    core.getEnvironmentByNamespace(namespace),
-    cookies(),
-  ]);
+  const environment = await core.getEnvironmentByNamespace(namespace);
   if (!environment) {
     console.log("xd");
     notFound();
   }
 
   const [currentUser, taxCodes, productProperties] = await Promise.all([
-    environment.getCurrentUser(cookieStore),
-    environment.listTaxCodes(cookieStore),
-    environment.listProductProperties(cookieStore),
+    environment.getCurrentUser(),
+    environment.listTaxCodes(),
+    environment.listProductProperties(),
   ]);
 
   if (!currentUser) redirect(`/${environment.data.namespace}/login`);

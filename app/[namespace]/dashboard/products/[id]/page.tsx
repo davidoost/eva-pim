@@ -9,7 +9,6 @@ import { core } from "@/lib/core";
 import { SelectProductImage } from "@/lib/db/types";
 import { Chip, Surface } from "@heroui/react";
 import { Icon } from "@iconify/react";
-import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 
 function MediaCard({ images }: { images: SelectProductImage[] }) {
@@ -65,8 +64,8 @@ export default async function ProductPage({
 
   const [product, taxCodes, productProperties] = await Promise.all([
     environment.getProduct(id),
-    environment.listTaxCodes(await cookies()),
-    environment.listProductProperties(await cookies()),
+    environment.listTaxCodes(),
+    environment.listProductProperties(),
   ]);
   if (!product) notFound();
 

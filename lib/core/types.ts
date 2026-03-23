@@ -1,5 +1,3 @@
-import { ReadonlyRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
-
 export type SetCookiesProps = {
   namespace: string;
   at: string;
@@ -21,7 +19,6 @@ export interface CallEvaServiceProps {
   service: string;
   body?: Record<string, unknown>;
   extraHeaders?: Record<string, string>;
-  cookies?: ReadonlyRequestCookies;
   type?: "message" | "async-message" | "async-result";
 }
 

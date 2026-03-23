@@ -12,7 +12,7 @@ import {
 } from "../db/types";
 import { db } from "../db";
 import { deleteCookies, setCookies } from "../cookies";
-import { ReadonlyRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
+import { cookies } from "next/headers";
 import { CallEvaServiceProps, ProductProperty, TaxCode, User } from "./types";
 import { buildPayload } from "../eva/payload-builder";
 
@@ -68,10 +68,10 @@ class CEnvironment {
     service,
     body,
     extraHeaders,
-    cookies,
     type = "message",
   }: CallEvaServiceProps) {
-    const token = cookies?.get(`at-${this.data.namespace}`)?.value;
+    const cookieStore = await cookies();
+    const token = cookieStore.get(`at-${this.data.namespace}`)?.value;
 
     const headers = {
       "EVA-User-Agent": "eva-pim-app/0.1",
@@ -568,9 +568,7 @@ class CEnvironment {
     }
   }
 
-  public async listProductProperties(
-    cookies: ReadonlyRequestCookies,
-  ): Promise<ProductProperty[]> {
+  public async listProductProperties(): Promise<ProductProperty[]> {
     const requestBody = {
       PageConfig: {
         Start: 0,
@@ -582,7 +580,6 @@ class CEnvironment {
     const data = await this.callEvaService({
       service: "listproductpropertytypes",
       body: requestBody,
-      cookies,
     });
 
     if (!data) {
@@ -592,9 +589,7 @@ class CEnvironment {
     return data.Result.Page as ProductProperty[];
   }
 
-  public async listTaxCodes(
-    cookies: ReadonlyRequestCookies,
-  ): Promise<TaxCode[]> {
+  public async listTaxCodes(): Promise<TaxCode[]> {
     const requestBody = {
       PageConfig: {
         Start: 0,
@@ -605,7 +600,6 @@ class CEnvironment {
     const data = await this.callEvaService({
       service: "listtaxcodes",
       body: requestBody,
-      cookies,
     });
 
     if (!data) {
@@ -615,12 +609,9 @@ class CEnvironment {
     return data.Result.Page as TaxCode[];
   }
 
-  public async getCurrentUser(
-    cookies: ReadonlyRequestCookies,
-  ): Promise<User | null> {
+  public async getCurrentUser(): Promise<User | null> {
     const data = await this.callEvaService({
       service: "getcurrentuser",
-      cookies,
     });
 
     if (!data) {
@@ -764,9 +755,7 @@ class CEnvironment {
     }
   }
 
-  public async triggerSync(
-    cookies: ReadonlyRequestCookies,
-  ): Promise<{ runId: string; asyncToken?: string; error?: string }> {
+  public async triggerSync(): Promise<{ runId: string; asyncToken?: string; error?: string }> {
     const runId = await this.createSyncRun();
     if (!runId) {
       return { runId: "", error: "Failed to create sync run record" };
@@ -782,7 +771,6 @@ class CEnvironment {
       const data = await this.callEvaService({
         service: "ImportProducts",
         body: payload,
-        cookies,
         type: "async-message",
       });
 
@@ -833,7 +821,6 @@ class CEnvironment {
 
   public async pollSyncRun(
     runId: string,
-    cookies: ReadonlyRequestCookies,
   ): Promise<SelectSyncRun | null> {
     try {
       const run = await this.getSyncRun(runId);
@@ -853,7 +840,6 @@ class CEnvironment {
       const data = await this.callEvaService({
         service: "importproducts",
         body: requestBody,
-        cookies,
         type: "async-result",
       });
 
