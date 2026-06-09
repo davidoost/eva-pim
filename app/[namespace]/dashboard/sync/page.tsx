@@ -1,4 +1,3 @@
-import DashboardPageHeader from "@/components/layout/dashboard-page-header";
 import { SyncRunsTable } from "@/components/sync/SyncRunsTable";
 import SyncButton from "@/components/sync/SyncButton";
 import { core } from "@/lib/core";
@@ -18,11 +17,6 @@ export default async function SyncPage({ params }: SyncPageProps) {
 
   return (
     <>
-      <DashboardPageHeader
-        title="Sync"
-        description="Push your product catalog to EVA via the ImportProducts API"
-      />
-
       <div className="w-full flex flex-col gap-3">
         <div className="flex justify-end">
           <SyncButton namespace={namespace} />

@@ -6,17 +6,16 @@ import UpdateProductForm from "./form";
 import { SelectProduct } from "@/lib/db/types";
 import { ProductProperty, TaxCode } from "@/lib/core/types";
 import { Icon } from "@iconify/react";
+import { useDashboard } from "@/app/[namespace]/dashboard/context";
 
 export default function UpdateProductFormModal({
   product,
-  taxCodes,
-  productProperties,
 }: {
   product: SelectProduct;
-  taxCodes: TaxCode[];
-  productProperties: ProductProperty[];
 }) {
   const modalState = useOverlayState();
+
+  const { taxCodes, productProperties } = useDashboard();
 
   return (
     <>

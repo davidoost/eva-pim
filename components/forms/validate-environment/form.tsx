@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  Fieldset,
-  Description,
-  TextField,
-  Input,
-  ErrorMessage,
-  Button,
-  Spinner,
-} from "@heroui/react";
+import { TextField, Input, ErrorMessage, Button, Spinner } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { useActionState } from "react";
 import validateEnvironment from "./action";
@@ -19,33 +11,30 @@ export default function ValidateEnvironmentForm() {
   });
 
   return (
-    <form action={action} className="flex flex-col max-w-sm gap-4">
-      <Fieldset>
-        <Fieldset.Legend>Your EVA product catalog, simplified.</Fieldset.Legend>
-        <Description>
-          Paste your Admin Suite URL below to get started.
-        </Description>
-        <TextField
-          isRequired
-          name="query"
-          defaultValue={state?.fieldValues?.query}
-        >
-          <Input placeholder="euw.yourbrand.test.eva-online.cloud" />
-          {state?.fieldErrors?.query && (
-            <ErrorMessage>{state.fieldErrors?.query?.errors[0]}</ErrorMessage>
-          )}
-        </TextField>
-      </Fieldset>
-      <div className="flex gap-4">
-        <Button type="submit">
-          Next
-          {isLoading ? (
-            <Spinner size="sm" color="current" />
-          ) : (
-            <Icon icon={"hugeicons:arrow-right-02"} />
-          )}
-        </Button>
-      </div>
+    <form action={action} className="flex flex-col gap-3">
+      <TextField
+        isRequired
+        name="query"
+        defaultValue={state?.fieldValues?.query}
+        aria-label="input"
+      >
+        <Input
+          placeholder="euw.yourbrand.test.eva-online.cloud"
+          aria-label="endpoint"
+          variant="secondary"
+        />
+        {state?.fieldErrors?.query && (
+          <ErrorMessage>{state.fieldErrors?.query?.errors[0]}</ErrorMessage>
+        )}
+      </TextField>
+      <Button type="submit" className="w-full">
+        Continue
+        {isLoading ? (
+          <Spinner size="sm" color="current" />
+        ) : (
+          <Icon icon={"hugeicons:arrow-right-02"} />
+        )}
+      </Button>
     </form>
   );
 }

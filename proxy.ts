@@ -1,33 +1,34 @@
 import { NextRequest, NextResponse } from "next/server";
 import { core } from "./lib/core";
-import { validateCookies } from "./lib/cookies";
+import { checkAuth } from "@davidoost/eva-nextjs-sdk";
 
-export async function proxy(req: NextRequest) {
-  const url = req.nextUrl.clone();
+export async function proxy(request: NextRequest) {
+  const url = request.nextUrl.clone();
 
-  // Handle namespace routes (dashboard/login)
   const segments = url.pathname.split("/");
   const namespace = segments[1];
   const route = segments[2];
 
-  if (route === "dashboard" || route === "login") {
-    const { valid, refreshed } = await validateCookies(namespace);
-
-    // If tokens were refreshed, redirect to apply the new cookies
-    if (refreshed) {
-      return NextResponse.redirect(req.url);
-    }
-
-    if (route === "dashboard" && !valid) {
-      return NextResponse.redirect(new URL(`/${namespace}/login`, req.url));
-    }
-
-    if (route === "login" && valid) {
-      return NextResponse.redirect(new URL(`/${namespace}/dashboard`, req.url));
-    }
+  // Only protect dashboard routes — everything else passes through
+  if (route !== "dashboard") {
+    return NextResponse.next();
   }
 
-  return NextResponse.next();
+  const env = await core.getEnvironmentByNamespace(namespace);
+  if (!env) {
+    return NextResponse.next();
+  }
+
+  const { valid, refreshed, response } = await checkAuth(request, {
+    baseUrl: env.data.endpoint,
+    namespace,
+  });
+
+  if (!valid && !refreshed) {
+    return NextResponse.redirect(new URL(`/${namespace}/login`, request.url));
+  }
+
+  return response;
 }
 
 // Exclude Next internals + common files

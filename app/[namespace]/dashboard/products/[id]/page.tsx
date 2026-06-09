@@ -1,7 +1,7 @@
 import DeleteProductFormModal from "@/components/forms/delete-product/modal";
 import UpdateProductFormModal from "@/components/forms/update-product/modal";
 import DashboardCard from "@/components/layout/dashboard-card";
-import DashboardPageHeader from "@/components/layout/dashboard-page-header";
+
 import { Setting, SettingsLayout } from "@/components/layout/settings-layout";
 import ProductStatusChip from "@/components/product-status-chip";
 import PublicationStatusChip from "@/components/publication-status-chip";
@@ -71,16 +71,10 @@ export default async function ProductPage({
 
   return (
     <>
-      <DashboardPageHeader title={product.name} description={product.id}>
-        <div className="flex">
-          <UpdateProductFormModal
-            product={product}
-            taxCodes={taxCodes}
-            productProperties={productProperties}
-          />
-          <DeleteProductFormModal productId={product.id} />
-        </div>
-      </DashboardPageHeader>
+      <div className="flex">
+        <UpdateProductFormModal product={product} />
+        <DeleteProductFormModal productId={product.id} />
+      </div>
 
       <DashboardCard title="Synchronization Status">
         <SettingsLayout>

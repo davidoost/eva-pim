@@ -25,12 +25,14 @@ import VariationsEditor, {
   VariationLevel,
 } from "@/components/forms/variations-editor";
 import { useDashboard } from "@/app/[namespace]/dashboard/context";
+import { ServicesProductPropertyTypesListProductPropertyTypesDto } from "@/src/eva/generated/eva-services-pim";
+import { PricingTaxCodeItem } from "@/src/eva/generated/eva-services-core";
 
 interface UpdateProductFormProps {
   modalState: UseOverlayStateReturn;
   product: SelectProduct;
-  taxCodes: TaxCode[];
-  productProperties: ProductProperty[];
+  taxCodes: PricingTaxCodeItem[];
+  productProperties: ServicesProductPropertyTypesListProductPropertyTypesDto[];
 }
 
 export default function UpdateProductForm({

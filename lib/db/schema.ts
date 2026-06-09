@@ -72,3 +72,11 @@ export const syncRuns = pgTable("pim_sync_runs", {
   error: text("error"),
   triggeredBy: text("triggered_by").default("manual"),
 });
+
+export const settings = pgTable("pim_env_settings", {
+  id: uuid().primaryKey().defaultRandom(),
+  environmentId: uuid("environment_id")
+    .notNull()
+    .references(() => environments.id),
+  endpointConfigurationId: text("eva_namespace"),
+});

@@ -1,8 +1,10 @@
-import Sidebar from "@/components/layout/sidebar";
 import { ReactNode } from "react";
 import { DashboardProvider } from "./context";
 import { core } from "@/lib/core";
 import { notFound, redirect } from "next/navigation";
+import AppSidebar from "@/components/navigation/sidebar";
+import AppNavbar from "@/components/navigation/navbar";
+import { AppLayoutClient } from "@/components/navigation/app-layout-client";
 
 interface DashboardLayoutProps {
   params: Promise<{ namespace: string }>;
@@ -15,40 +17,29 @@ export default async function DashboardLayout({
 }: DashboardLayoutProps) {
   const { namespace } = await params;
 
-  const environment = await core.getEnvironmentByNamespace(namespace);
-  if (!environment) {
-    console.log("xd");
+  const env = await core.getEnvironmentByNamespace(namespace);
+  if (!env) {
     notFound();
   }
 
   const [currentUser, taxCodes, productProperties] = await Promise.all([
-    environment.getCurrentUser(),
-    environment.listTaxCodes(),
-    environment.listProductProperties(),
+    env.getCurrentUser(),
+    env.listTaxCodes(),
+    env.listProductProperties(),
   ]);
 
-  if (!currentUser) redirect(`/${environment.data.namespace}/login`);
+  if (!currentUser) redirect(`/${env.data.namespace}/login`);
 
   return (
     <DashboardProvider
-      environment={environment.data}
+      environment={env.data}
       user={currentUser}
       taxCodes={taxCodes}
       productProperties={productProperties}
     >
-      <div className="md:max-h-dvh flex w-full md:overflow-hidden">
-        {/* Desktop Sidebar - Hidden on mobile */}
-
-        <Sidebar />
-
-        <div className="w-full flex flex-col">
-          <div className="md:flex-1 md:overflow-x-hidden md:overflow-y-auto p-4 sm:p-6 pb-24 md:pb-6">
-            <main className="w-full max-w-5xl mx-auto flex flex-col gap-4 sm:gap-6">
-              {children}
-            </main>
-          </div>
-        </div>
-      </div>
+      <AppLayoutClient sidebar={<AppSidebar />} navbar={<AppNavbar />}>
+        <main className="p-6">{children}</main>
+      </AppLayoutClient>
     </DashboardProvider>
   );
 }

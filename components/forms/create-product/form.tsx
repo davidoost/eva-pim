@@ -17,7 +17,7 @@ import { useRouter } from "next/navigation";
 import ProductImageUploader, {
   ProductImageUploaderRef,
 } from "@/components/form-fields/product-image-uploader";
-import { TaxCode } from "@/lib/core/types";
+import { PricingTaxCodeItem } from "@/src/eva/generated/eva-services-core";
 import { createProductAction } from "@/app/[namespace]/dashboard/products/new/actions";
 import CancelButton from "@/components/form-fields/cancel-button";
 import SubmitButton from "@/components/form-fields/submit-button";
@@ -28,7 +28,7 @@ import VariationsEditor, {
 interface CreateProductFormProps {
   modalState: UseOverlayStateReturn;
   namespace: string;
-  taxCodes: TaxCode[];
+  taxCodes: PricingTaxCodeItem[];
 }
 
 export default function CreateProductForm({

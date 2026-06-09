@@ -1,4 +1,3 @@
-import DashboardPageHeader from "@/components/layout/dashboard-page-header";
 import DashboardCard from "@/components/layout/dashboard-card";
 import { core } from "@/lib/core";
 import { notFound } from "next/navigation";
@@ -148,11 +147,6 @@ export default async function DashboardHomePage({
 
   return (
     <>
-      <DashboardPageHeader
-        title="Overview"
-        description={`${env.data.namespace} — ${env.data.endpoint}`}
-      />
-
       <div className="flex flex-col gap-4">
         {/* Stats */}
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">

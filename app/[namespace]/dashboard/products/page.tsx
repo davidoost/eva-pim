@@ -1,4 +1,3 @@
-import DashboardPageHeader from "@/components/layout/dashboard-page-header";
 import { SearchableProductsTable } from "@/components/tables/products";
 import { core } from "@/lib/core";
 import { notFound } from "next/navigation";
@@ -17,11 +16,6 @@ export default async function ProductsPage({ params }: ProductsPageProps) {
 
   return (
     <>
-      <DashboardPageHeader
-        title="Products"
-        description="Manage your product catalog"
-      />
-
       <SearchableProductsTable products={products} />
     </>
   );

@@ -1,7 +1,6 @@
 "use client";
 
 import { Button, Spinner } from "@heroui/react";
-import { Icon } from "@iconify/react";
 import { useState } from "react";
 import { logout } from "./action";
 

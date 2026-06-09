@@ -35,8 +35,14 @@ export async function login(
     };
   }
 
-  const success = await env.login(parsed.data.username, parsed.data.password);
-  if (!success) {
+  const authData = await env.eva.login({
+    Username: parsed.data.username,
+    Password: parsed.data.password,
+    OrganizationUnitID: 1,
+    UseJwtTokens: true,
+  });
+
+  if (!authData || authData.Authentication !== 2) {
     return {
       status: "error",
       fieldValues: parsed.data,
@@ -44,5 +50,5 @@ export async function login(
     };
   }
 
-  return { status: "success", fieldValues: parsed.data };
+  redirect(`/${namespace}/dashboard`);
 }

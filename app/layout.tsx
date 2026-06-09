@@ -1,18 +1,11 @@
 import type { Metadata } from "next";
-import { Geist, Young_Serif } from "next/font/google";
+import { Geist } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 
 const geist = Geist({
   subsets: ["latin"],
   variable: "--font-geist",
-  display: "swap",
-});
-
-const youngSerif = Young_Serif({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-display",
   display: "swap",
 });
 
@@ -30,9 +23,9 @@ export default async function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`bg-background ${geist.variable} ${youngSerif.variable} ${geist.className}`}
+      className={`bg-background ${geist.variable} ${geist.className}`}
     >
-      <body className="flex w-full min-h-dvh justify-center font-sans">
+      <body className="flex flex-row">
         <Providers>{children}</Providers>
       </body>
     </html>

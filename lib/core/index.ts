@@ -11,10 +11,18 @@ import {
   SelectSyncRun,
 } from "../db/types";
 import { db } from "../db";
-import { deleteCookies, setCookies } from "../cookies";
-import { cookies } from "next/headers";
-import { CallEvaServiceProps, ProductProperty, TaxCode, User } from "./types";
 import { buildPayload } from "../eva/payload-builder";
+import { createClient } from "@/src/eva/server";
+import {
+  ImportProducts_Async,
+  ServicesProductPropertyTypesListProductPropertyTypesDto,
+} from "@/src/eva/generated/eva-services-pim";
+import {
+  PricingTaxCodeItem,
+  UsersLoggedInUserDto,
+} from "@/src/eva/generated/eva-services-core";
+
+type EvaClient = Awaited<ReturnType<typeof createClient>>;
 
 class CCore {
   public async validateEvaEndpoint(endpoint: string): Promise<string | null> {
@@ -42,7 +50,11 @@ class CCore {
 
       if (!res) return null;
 
-      return new CEnvironment(res);
+      const eva = await createClient({
+        baseUrl: res.endpoint,
+        namespace: res.namespace,
+      });
+      return new CEnvironment(res, eva);
     } catch (error) {
       console.error("[ERROR]:[CCore]:[getEnvironmentByNamespace]:", error);
       return null;
@@ -62,100 +74,10 @@ class CCore {
 }
 
 class CEnvironment {
-  constructor(readonly data: SelectEnvironment) {}
-
-  public async callEvaService({
-    service,
-    body,
-    extraHeaders,
-    type = "message",
-  }: CallEvaServiceProps) {
-    const cookieStore = await cookies();
-    const token = cookieStore.get(`at-${this.data.namespace}`)?.value;
-
-    const headers = {
-      "EVA-User-Agent": "eva-pim-app/0.1",
-      "Content-Type": "application/json",
-      "Accept-Language": "application/json",
-      ...(token ? { Authorization: `eva ${token}` } : {}),
-      ...(extraHeaders ?? {}),
-    };
-
-    try {
-      const res = await fetch(`${this.data.endpoint}/${type}/${service}`, {
-        method: "POST",
-        headers: headers,
-        body: JSON.stringify(body),
-      });
-
-      const json = await res.json();
-
-      if (!res.ok) console.error("[EVA]:", JSON.stringify(json));
-
-      return json;
-    } catch {
-      return null;
-    }
-  }
-
-  public async login(username: string, password: string): Promise<boolean> {
-    const requestBody = {
-      Username: username,
-      Password: password,
-      OrganizationUnitID: "1",
-      useJwtTokens: true,
-    };
-
-    const data = await this.callEvaService({
-      service: "login",
-      body: requestBody,
-    });
-
-    console.log(data);
-
-    if (!data || data.Authentication != 2) return false;
-
-    const cookies = await setCookies({
-      namespace: this.data.namespace,
-      at: data.User.AuthenticationToken,
-      rt: data.User.RefreshToken,
-      rtExpString: data.User.RefreshTokenExpireDate,
-    });
-
-    if (!cookies) {
-      return false;
-    }
-
-    return true;
-  }
-
-  public async refreshToken(token: string): Promise<boolean> {
-    const requestBody = {
-      Token: token,
-    };
-
-    const data = await this.callEvaService({
-      service: "refreshToken",
-      body: requestBody,
-    });
-
-    if (!data) {
-      await deleteCookies(this.data.namespace);
-      return false;
-    }
-
-    if (!data.Token || !data.RefreshToken || !data.RefreshTokenExpireDate) {
-      await deleteCookies(this.data.namespace);
-      return false;
-    }
-
-    return await setCookies({
-      namespace: this.data.namespace,
-      at: data.Token,
-      rt: data.RefreshToken,
-      rtExpString: data.RefreshTokenExpireDate,
-    });
-  }
+  constructor(
+    readonly data: SelectEnvironment,
+    readonly eva: EvaClient,
+  ) {}
 
   private notDeleted() {
     return or(isNull(products.isDeleted), eq(products.isDeleted, false));
@@ -568,7 +490,9 @@ class CEnvironment {
     }
   }
 
-  public async listProductProperties(): Promise<ProductProperty[]> {
+  public async listProductProperties(): Promise<
+    ServicesProductPropertyTypesListProductPropertyTypesDto[]
+  > {
     const requestBody = {
       PageConfig: {
         Start: 0,
@@ -577,19 +501,16 @@ class CEnvironment {
       },
     };
 
-    const data = await this.callEvaService({
-      service: "listproductpropertytypes",
-      body: requestBody,
-    });
+    const data = await this.eva.ListProductPropertyTypes(requestBody);
 
-    if (!data) {
+    if (!data || !data.Result) {
       return [];
     }
 
-    return data.Result.Page as ProductProperty[];
+    return data.Result.Page;
   }
 
-  public async listTaxCodes(): Promise<TaxCode[]> {
+  public async listTaxCodes(): Promise<PricingTaxCodeItem[]> {
     const requestBody = {
       PageConfig: {
         Start: 0,
@@ -597,28 +518,23 @@ class CEnvironment {
       },
     };
 
-    const data = await this.callEvaService({
-      service: "listtaxcodes",
-      body: requestBody,
-    });
+    const data = await this.eva.ListTaxCodes(requestBody);
 
-    if (!data) {
+    if (!data || !data.Result) {
       return [];
     }
 
-    return data.Result.Page as TaxCode[];
+    return data.Result.Page;
   }
 
-  public async getCurrentUser(): Promise<User | null> {
-    const data = await this.callEvaService({
-      service: "getcurrentuser",
-    });
+  public async getCurrentUser(): Promise<UsersLoggedInUserDto | undefined> {
+    const data = await this.eva.GetCurrentUser({});
 
     if (!data) {
-      return null;
+      return undefined;
     }
 
-    return data.User as User;
+    return data.User;
   }
 
   // -------------------------------------------------------------------------
@@ -755,7 +671,11 @@ class CEnvironment {
     }
   }
 
-  public async triggerSync(): Promise<{ runId: string; asyncToken?: string; error?: string }> {
+  public async triggerSync(): Promise<{
+    runId: string;
+    asyncToken?: string;
+    error?: string;
+  }> {
     const runId = await this.createSyncRun();
     if (!runId) {
       return { runId: "", error: "Failed to create sync run record" };
@@ -768,11 +688,9 @@ class CEnvironment {
 
       payload = buildPayload(rootProducts);
 
-      const data = await this.callEvaService({
-        service: "ImportProducts",
-        body: payload,
-        type: "async-message",
-      });
+      const data = await this.eva.ImportProducts_Async(
+        payload as unknown as ImportProducts_Async,
+      );
 
       const evaError = data?.Error?.Message ?? data?.Error ?? null;
 
@@ -819,9 +737,7 @@ class CEnvironment {
     }
   }
 
-  public async pollSyncRun(
-    runId: string,
-  ): Promise<SelectSyncRun | null> {
+  public async pollSyncRun(runId: string): Promise<SelectSyncRun | null> {
     try {
       const run = await this.getSyncRun(runId);
       if (!run) return null;
@@ -837,25 +753,20 @@ class CEnvironment {
         JobID: run.asyncToken,
       };
 
-      const data = await this.callEvaService({
-        service: "importproducts",
-        body: requestBody,
-        type: "async-result",
-      });
+      const data = await this.eva.ImportProducts_AsyncResult(requestBody);
 
       if (!data) return run;
 
       if (data?.Metadata?.IsAsyncResultAvailable) {
-        const hasError = data?.Error || data?.error;
+        const hasError = data?.Error;
 
         if (!hasError) {
           const uuidRegex =
             /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-          const productMap: Array<{ ID: string; BackendID: string }> =
-            data.ProductMap ?? [];
+          const productMap = data.ProductMap ?? [];
           const backendById = new Map(
             productMap
-              .filter((e) => uuidRegex.test(e.BackendID))
+              .filter((e) => uuidRegex.test(e.BackendID ?? ""))
               .map((e) => [e.ID, e.BackendID]),
           );
 
@@ -868,13 +779,13 @@ class CEnvironment {
             .where(eq(products.environmentId, this.data.id));
 
           // Set evaId for newly created products
-          const createdEvaIds: string[] = data.CreatedProductIDs ?? [];
+          const createdEvaIds = data.CreatedProductIDs ?? [];
           for (const evaId of createdEvaIds) {
             const backendId = backendById.get(evaId);
             if (!backendId) continue;
             await db
               .update(products)
-              .set({ evaId })
+              .set({ evaId: String(evaId) })
               .where(eq(products.id, backendId));
           }
         }
@@ -883,7 +794,7 @@ class CEnvironment {
           status: hasError ? "failed" : "success",
           completedAt: new Date(),
           evaResponse: data,
-          ...(hasError ? { error: String(data.Error ?? data.error) } : {}),
+          ...(hasError ? { error: String(data.Error) } : {}),
         });
         return await this.getSyncRun(runId);
       }

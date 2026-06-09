@@ -1,4 +1,4 @@
-import { Scope, User } from "./core/types";
+import { Scope } from "./core/types";
 
 export function ensureHasProtocol(s: unknown): string | unknown {
   if (typeof s !== "string") return s;
@@ -20,12 +20,11 @@ export function toEvaApiUrl(input: string): string {
  * Checks if a functionality has the required scope
  */
 export function hasScope(
-  user: User,
+  user: { ScopedFunctionalities?: Record<string, number> },
   key: string,
   requiredScope: Scope,
 ): boolean {
-  // If the functionality is not present at all → deny
-  if (!(key in user.ScopedFunctionalities)) {
+  if (!user.ScopedFunctionalities || !(key in user.ScopedFunctionalities)) {
     return false;
   }
 
