@@ -10007,14 +10007,14 @@ export interface DataModelsBaseDataModel {
   ID: number;
 }
 
-export interface DataModelsBaseEnumDataModel {
+export interface DataModelsBaseEnumDataModel<TModel = unknown> {
   Description?: string;
   ID: number;
   Name?: string;
+
 }
 
-export interface DataModelsBaseEnumDataModel<TModel> extends DataModelsBaseEnumDataModel {
-}
+
 
 export interface DataModelsBaseModifiableDataModel extends DataModelsBaseDataModel {
   CreatedBy?: DataModelsIUser;
@@ -11292,6 +11292,7 @@ export enum DataModelsRepairStatus {
   WaitingForGoods_OnHold = 8,
   WaitingForRepair_OnHold = 9,
   WaitingForShipment_OnHold = 10,
+  WaitingForUpfrontPayment = 11,
 }
 
 export enum DataModelsReservationCleanupTaskLineTypes {
@@ -13135,11 +13136,11 @@ export interface EntityFieldValidatorsValidatorsDefaultEntityFieldValidator exte
   Required?: boolean;
 }
 
-export interface EntityFieldValidatorsValidatorsEntityFieldValidatorBase {
+export interface EntityFieldValidatorsValidatorsEntityFieldValidatorBase<T = unknown> {
+
 }
 
-export interface EntityFieldValidatorsValidatorsEntityFieldValidatorBase<T> extends EntityFieldValidatorsValidatorsEntityFieldValidatorBase {
-}
+
 
 export interface EntityFieldValidatorsValidatorsStringEntityFieldValidator extends EntityFieldValidatorsValidatorsEntityFieldValidatorBase<string | null> {
   MaxLength?: number;
@@ -14477,29 +14478,13 @@ export interface UnsubscribeFromFeed extends RequestMessageWithEmptyResponse {
   ID: number;
 }
 
-export interface FilteredPagedResultRequest<TFilter, TResponse> extends RequestMessage<TResponse> {
-  /**
-  * The initial page configuration. This is only used when requesting the first page of results. Subsequent pages are requested using the `PageToken` property.
-  */
-  InitialPageConfig?: PageTokenConfig<TFilter>;
+export interface FilteredPagedResultRequest<TFilter, TSort = unknown, TResponse = unknown> extends RequestMessage<TResponse> {
+  InitialPageConfig?: SortablePageTokenConfig<TSort, TFilter> | PageTokenConfig<TFilter>;
   PageConfig?: PageConfig<TFilter>;
-  /**
-  * The page token from a previous response. This is used to request subsequent pages of results.
-  */
   PageToken?: string;
 }
 
-export interface FilteredPagedResultRequest<TFilter, TSort, TResponse> extends RequestMessage<TResponse> {
-  /**
-  * The initial page configuration. This is only used when requesting the first page of results. Subsequent pages are requested using the `PageToken` property.
-  */
-  InitialPageConfig?: SortablePageTokenConfig<TSort, TFilter>;
-  PageConfig?: PageConfig<TFilter>;
-  /**
-  * The page token from a previous response. This is used to request subsequent pages of results.
-  */
-  PageToken?: string;
-}
+
 
 export interface FinanceAccountSummary {
   /**
@@ -20690,6 +20675,20 @@ export interface LoyaltyUserLoyaltyPointBalance_Mutations {
   Points: number;
   Remark?: string;
   Type: DataModelsUserLoyaltyMutationType;
+}
+
+/**
+* Gets a single error from the message queue by its ID.
+*/
+export interface GetMessageQueueError extends RequestMessage<GetMessageQueueErrorResponse> {
+  /**
+  * The ID of the message queue error to retrieve.
+  */
+  ID: number;
+}
+
+export interface GetMessageQueueErrorResponse extends ResponseMessage {
+  Result?: MessageQueueMessageQueueErrorDto;
 }
 
 /**
@@ -30726,7 +30725,18 @@ export interface PagedResponseMessage<T> extends ResponseMessage {
   Results: T[];
 }
 
-export interface PagedResult {
+export interface PagedResult<TModel = unknown> {
+
+  CurrentPage: number;
+  Filters?: Record<string,string | null>;
+  Limit: number;
+  NumberOfPages: number;
+  Offset: number;
+  Page: TModel[];
+  PageConfig?: PageConfig<Record<string,string | null> | null>;
+  SortDirection: SortDirection;
+  SortProperty?: string;
+  Total: number;
 }
 
 export interface PagedResultRequest<TResponse> extends RequestMessage<TResponse> {
@@ -30748,18 +30758,7 @@ export interface PagedResultResponse<TModel> extends ResponseMessage {
   Results?: TModel[];
 }
 
-export interface PagedResult<TModel> extends PagedResult {
-  CurrentPage: number;
-  Filters?: Record<string,string | null>;
-  Limit: number;
-  NumberOfPages: number;
-  Offset: number;
-  Page: TModel[];
-  PageConfig?: PageConfig<Record<string,string | null> | null>;
-  SortDirection: SortDirection;
-  SortProperty?: string;
-  Total: number;
-}
+
 
 export enum ParsingCompletionCategories {
   Keyword = 0,
@@ -35860,6 +35859,20 @@ export interface EnqueueTask extends RequestMessageWithEmptyResponse {
 }
 
 /**
+* Gets a single recurring scheduled task by its ID.
+*/
+export interface GetRecurringScheduledTask extends RequestMessage<GetRecurringScheduledTaskResponse> {
+  /**
+  * The ID of the recurring scheduled task to retrieve.
+  */
+  ID: string;
+}
+
+export interface GetRecurringScheduledTaskResponse extends ResponseMessage {
+  Result?: RecurringTasksRecurringTask;
+}
+
+/**
 * Get the logging of the run of a recurring task.
 */
 export interface GetRecurringTaskLogging extends RequestMessage<GetRecurringTaskLoggingResponse> {
@@ -36030,7 +36043,8 @@ export interface RepositoriesListOrderInterventionTasksFilter {
   OrganizationUnitID?: number;
 }
 
-export interface RequestMessage {
+export interface RequestMessage<TResponse = unknown> {
+
 }
 
 export interface RequestMessageWithEmptyResponse extends RequestMessage<EmptyResponseMessage> {
@@ -36042,8 +36056,7 @@ export interface RequestMessageWithResourceResponse extends RequestMessage<Resou
 export interface RequestMessageWithResourceWithBlobIDResponse extends RequestMessage<ResourceWithBlobIDResponseMessage> {
 }
 
-export interface RequestMessage<TResponse> extends RequestMessage {
-}
+
 
 export interface ResendReasonsListResendReasonsFilter {
   Name?: string;
@@ -40340,6 +40353,7 @@ export enum ServicesManagementCasesRepairState {
   WaitingForPickup = 6,
   Started = 7,
   OnHold = 8,
+  WaitingForUpfrontPayment = 9,
 }
 
 export interface UpdateRepair extends RequestMessageWithEmptyResponse {
@@ -51720,6 +51734,11 @@ export interface UsersLoyaltyGetUserLoyaltyDataResponse_LoyaltyProgramResult {
   * The current loyalty state for the user in this program.
   */
   CurrentState?: UsersLoyaltyGetUserLoyaltyDataResponse_CurrentStateInfo;
+  /**
+  * Entity type: CustomField
+  * Custom field values configured on this loyalty program, filtered by the current organization unit's visibility.
+  */
+  CustomFieldValuesWithOptions?: Record<string,DataModelsCustomFieldValueWithOptions>;
   /**
   * The image URL for this loyalty program.
   */

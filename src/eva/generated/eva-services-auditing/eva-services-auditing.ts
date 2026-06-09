@@ -226,9 +226,21 @@ export enum Errors
   /**
   * {0:string}
   */
+  InfrasecErrors_RegisterEnrolledUnderDifferentOrg = 'InfrasecErrors:RegisterEnrolledUnderDifferentOrg',
+  /**
+  * Infrasec register '{0:string}' is already enrolled but not active; cannot reuse it as the station FiscalSystemID.
+  */
+  InfrasecErrors_RegisterNotActiveForReuse = 'InfrasecErrors:RegisterNotActiveForReuse',
+  /**
+  * {0:string}
+  */
+  InfrasecErrors_RegisterEnrollmentStatusUnavailable = 'InfrasecErrors:RegisterEnrollmentStatusUnavailable',
+  /**
+  * {0:string}
+  */
   InfrasecErrors_ReceiptError = 'InfrasecErrors:ReceiptError',
   /**
-  * Auth Error Code 189. RequestID: {0:string}. Check the Organization Number (Organization RegistrationNumber) and the RegisterID from the request, the station from where the order was paid must belong to thesame OU.
+  * Auth Error Code 189. RequestID: {0:string}. Check the Organization Number (Organization RegistrationNumber) and the RegisterID from the request, the station from where the order was paid must belong to the same OU.
   */
   InfrasecErrors_ReceiptAuthError = 'InfrasecErrors:ReceiptAuthError',
   /**

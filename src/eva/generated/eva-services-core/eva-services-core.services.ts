@@ -803,6 +803,8 @@ import {
   GetLoginOrganizationUnitsForUserResponse,
   GetLotteryNumber,
   GetLotteryNumberResponse,
+  GetMessageQueueError,
+  GetMessageQueueErrorResponse,
   GetOpenCashDrawerReasons,
   GetOpenCashDrawerReasonsResponse,
   GetOpeningHoursTemplateByID,
@@ -952,6 +954,8 @@ import {
   GetQuickBuyOptionsResponse,
   GetQuickBuys,
   GetQuickBuysResponse,
+  GetRecurringScheduledTask,
+  GetRecurringScheduledTaskResponse,
   GetRecurringTaskLogging,
   GetRecurringTaskLoggingResponse,
   GetRecurringTaskRuns,
@@ -6098,6 +6102,14 @@ export class SvcGetLotteryNumber implements IEvaServiceDefinition
   response?: GetLotteryNumberResponse;
 }
 
+export class SvcGetMessageQueueError implements IEvaServiceDefinition
+{
+  name = 'GetMessageQueueError';
+  path = '/message/GetMessageQueueError';
+  request?: GetMessageQueueError;
+  response?: GetMessageQueueErrorResponse;
+}
+
 export class SvcGetOpenCashDrawerReasons implements IEvaServiceDefinition
 {
   name = 'GetOpenCashDrawerReasons';
@@ -6704,6 +6716,14 @@ export class SvcGetQuickBuys implements IEvaServiceDefinition
   path = '/message/GetQuickBuys';
   request?: GetQuickBuys;
   response?: GetQuickBuysResponse;
+}
+
+export class SvcGetRecurringScheduledTask implements IEvaServiceDefinition
+{
+  name = 'GetRecurringScheduledTask';
+  path = '/message/GetRecurringScheduledTask';
+  request?: GetRecurringScheduledTask;
+  response?: GetRecurringScheduledTaskResponse;
 }
 
 export class SvcGetRecurringTaskLogging implements IEvaServiceDefinition
